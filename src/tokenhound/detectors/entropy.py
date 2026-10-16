@@ -30,9 +30,11 @@ _ASSIGNMENT = re.compile(
         (?:key|secret|token|passw(?:or)?d|pwd|credential|auth)
      [\w.\-]{0,64})
     ["']?\s*(?::=|=>|[:=])\s*
-    (?P<quote>["'`]?)
-    (?P<value>[^\s"'`,;]+)
-    (?P=quote)
+    (?:
+        (?P<quote>["'`])(?P<quoted>[^\s"'`,;]+)(?P=quote)
+      | # A bare value must end cleanly: ``self._keys[rule.id]`` or ``get(x)`` is code.
+        (?P<bare>[^\s"'`,;()\[\]{}<>]+)(?=[\s,;"'`)\]}>]|$)
+    )
     """,
     re.IGNORECASE | re.VERBOSE,
 )
@@ -65,13 +67,14 @@ class EntropyDetector:
 
     def detect(self, chunk: Chunk) -> Iterator[Candidate]:
         for match in _ASSIGNMENT.finditer(chunk.text):
-            value = match.group("value")
+            group = "quoted" if match.group("quoted") is not None else "bare"
+            value = match.group(group)
             if len(value) < self.min_length or shannon_entropy(value) < self.min_entropy:
                 continue
             yield Candidate(
                 rule_id=RULE_ID,
                 match=value,
-                span=match.span("value"),
+                span=match.span(group),
                 chunk=chunk,
                 severity=Severity.MEDIUM,
                 remediation=REMEDIATION,

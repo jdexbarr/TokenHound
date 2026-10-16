@@ -6,15 +6,16 @@ VERIFIED · ACCEPTED.
 
 ## Current state (2026-10-16)
 
-- **Current milestone:** H3 — provider rules (phase F1)
-- **Done:** H0 plan; H1 skeleton (PR #1); H2 detection core (PR #2).
-- **In progress:** H3 pull request (`h3-rules`).
-- **Blockers:** tag `f0` must be created by Juan (the cloud environment cannot push tags).
+- **Current milestone:** H4 — working-tree scan and output (last milestone of phase F1)
+- **Done:** H0 plan; H1 skeleton (PR #1); H2 detection core (PR #2); H3 provider rules (PR #3).
+- **In progress:** H4 pull request (`h4-scan`).
+- **Blockers:** tags `f0` and, after H4 merges, `f1` must be created by Juan (the cloud environment
+  cannot push tags).
 - **Failing / pending tests:** none.
 - **Next three actions:**
-  1. Merge H3 once CI is green.
-  2. H4: `WorkingTreeSource` (skip `.git/`, binaries, files > 1 MB; notebook outputs), orchestrator.
-  3. H4: Rich and JSON reporters, exit codes, overlap handling between provider rules and entropy.
+  1. Merge H4 once CI is green; Juan tags `f1`.
+  2. H5: `GitHistorySource` (streamed `git log -p`, added lines only, blob cache) and `--history`.
+  3. H5: `StagedSource` and `--staged`, dedup by fingerprint, first speed measurement.
 
 ## Milestones
 
@@ -23,8 +24,8 @@ VERIFIED · ACCEPTED.
 | H0 | — | Spec analysis, requirements, architecture, plan | all | — | ACCEPTED |
 | H1 | F0 | Professional skeleton | TECH-001…003, TECH-008, NFR-011, NFR-020, DEL-001/002/016/019 | H0 | VERIFIED (merged, PR #1) |
 | H2 | F1 | Core models, masking, fingerprint, rule schema/loader, regex engine, entropy detector | FR-006/007/013/017/019/021/025, NFR-001 | H1 | VERIFIED (merged, PR #2) |
-| H3 | F1 | 11 YAML rules validated against official docs, remediation, per-rule tests, JWT elevation | FR-008/009/010/020, NFR-005, NFR-012 | H2 | VERIFIED (local; CI pending) |
-| H4 | F1 | Working-tree source, orchestrator, AI-priority files, Rich + JSON output, exit codes | FR-001/004/011/022/023/039 | H3 | NOT STARTED |
+| H3 | F1 | 11 YAML rules validated against official docs, remediation, per-rule tests, JWT elevation | FR-008/009/010/020, NFR-005, NFR-012 | H2 | VERIFIED (merged, PR #3) |
+| H4 | F1 | Working-tree source, orchestrator, AI-priority files, Rich + JSON output, exit codes | FR-001/004/011/022/023/039 | H3 | VERIFIED (local; CI on the H4 PR) |
 | H5 | F2 | Git history (diffs, cache), staged source, dedup, first speed measurement | FR-002/003/017, NFR-006 | H4 | NOT STARTED |
 | H6 | F2 | Baseline/allowlist, `baseline` command, pre-commit hook | FR-005/018/026 | H5 | NOT STARTED |
 | H7 | F3 | Dataset: synthetic generator, hard negatives, real negatives (pointers), labeling script, split by repo | FR-029…033, NFR-002 | H6 | NOT STARTED |
@@ -99,6 +100,38 @@ security tokens; Stripe API keys and restricted keys; Slack token types; Google 
 practices; Replicate API tokens; RFC 7468 (PEM) and RFC 7519 (JWT). Each YAML file cites its URLs.
 
 **Evidence (local, 2026-10-16, Python 3.13.16):** `pytest` 353 passed (167 rule tests); coverage
-99%; ruff, ruff format and mypy strict (20 files) clean. CI: pending.
+99%; ruff, ruff format and mypy strict (20 files) clean. CI: green on Python 3.11–3.13 and build
+([run 38852619611](https://github.com/jdexbarr/TokenHound/actions/runs/38852619611)).
+
+## H4 — Working-tree scan and output (F1)
+
+1. **Goal:** `tokenhound scan <dir>` works end to end on the working tree, with terminal and JSON
+   output and exit codes. Closes phase F1.
+2. **Requirements:** FR-001, FR-004 (working tree), FR-011, FR-022, FR-023, FR-025, FR-039, UI-003,
+   TECH-004, NFR-001 (output part).
+3. **Dependencies:** H3.
+4. **Tasks:** `errors.py`; `sources/` (`Source` protocol, `priority.py` file kinds,
+   `working_tree.py`, `notebook.py`); `Detector` protocol; `scanner.py` (overlap handling,
+   threshold, sorting); `reporters/` (`Reporter` protocol, Rich terminal, JSON); `scan` command;
+   tighter bare-value matching in the entropy detector.
+5. **Files:** the modules above, `cli.py`, tests `test_priority.py`, `test_working_tree.py`,
+   `test_scanner.py`, `test_reporters.py`, `test_cli.py`, `test_no_secret_leak.py`.
+6. **Tests:** file walking and skip rules (`.git/`, symlinks, binaries, size limits, unreadable
+   files); notebook sources and outputs with line numbers in the `.ipynb`; overlap and threshold
+   logic; JSON shape; terminal snapshot and control-character neutralisation; CLI exit codes and
+   errors; one synthetic secret per rule planted in MCP config, `.env` and notebook output, checked
+   absent from every output format and the verbose log.
+7. **Acceptance:** all of the above pass; ruff, ruff format and mypy strict clean.
+8. **Risks found:** a self-scan of this repo produced 464 candidates, almost all from `.venv/`
+   (A-09 scans everything outside `.git/`) and from code such as `secret = match.group(...)`. Bare
+   values that contain or end in code punctuation are no longer entropy candidates (464 → 73;
+   the rest are in `.venv/` plus a handful of identifiers the classifier must learn, e.g.
+   `monkeypatch`). Excluding dependency folders is noted in `IDEAS.md` pending Juan's decision.
+9. **Result:** phase F1 complete after merge; tag `f1`.
+
+**Evidence (local, 2026-10-16, Python 3.13.16):** `pytest` 437 passed, 1 skipped (the unreadable-file
+test is skipped when running as root; the same path is covered by a monkeypatched test); coverage 99%
+(`sources/`, `reporters/`, `scanner.py`, `cli.py` 100%); ruff, ruff format, mypy strict and all
+pre-commit hooks pass. CI: pending.
 
 Detailed task breakdowns for H4+ are written when each milestone starts.

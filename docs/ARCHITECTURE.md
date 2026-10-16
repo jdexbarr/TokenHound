@@ -41,12 +41,68 @@ class Detector(Protocol):
     def detect(self, chunk: Chunk) -> Iterator[Candidate]: ...
 
 
-class Classifier(Protocol):
+class Classifier(Protocol):  # H8
     def score(self, features: Mapping[str, float]) -> float: ...
 
 
 class Reporter(Protocol):
-    def render(self, findings: Sequence[Finding]) -> str: ...
+    def render(self, result: ScanResult) -> str: ...
+```
+
+`Source` lives in `sources/__init__.py`, `Detector` in `detectors/__init__.py` and `Reporter` in
+`reporters/__init__.py`. Until H8 the scanner takes a `Scorer = Callable[[Candidate], float]`
+(default: pass-through 1.0); H8 plugs feature extraction plus the model in behind it.
+
+## Scan flow (H4)
+
+`scanner.scan(source, detectors, threshold=..., scorer=...)`:
+
+1. For each chunk, run every detector. Candidates from the generic entropy detector that overlap a
+   provider-rule candidate in the same chunk are dropped (the provider rule is more specific).
+2. Score each candidate, build the masked `Finding`, keep it if `score >= threshold`, otherwise
+   count it as below threshold.
+3. Sort findings by severity (most severe first), path, line, rule.
+
+The result is a `ScanResult(findings, files_scanned, below_threshold, threshold)`.
+
+### Working-tree source
+
+`WorkingTreeSource(root)` walks `root` (or reads a single file) and yields one `Chunk` per text file:
+
+- Skips `.git/`, symbolic links (never leaves the scanned tree), binaries (NUL byte in the first
+  8 KiB), unreadable files (logged) and files over 1 MiB. `.gitignore` is not honoured (A-09).
+- Priority files (spec §7, `sources/priority.py`): MCP/agent configs, `.env*`, notebooks,
+  docker-compose, Terraform and GitHub workflows. They are scanned first and may be up to 20 MiB.
+  `.env.example` has its own kind so H8 can give it a separate threshold.
+- Notebooks are split into one chunk per cell source and per text output (stream, `text/*`,
+  `application/json`, tracebacks; images are ignored). Line numbers point into the `.ipynb` file.
+- Content is decoded as UTF-8 with replacement characters.
+
+## Output
+
+- **Terminal** (`reporters/terminal.py`): Rich table (severity, rule, `path:line`, masked value,
+  score), remediation once per rule, and a summary line. Colour only when stdout is a terminal.
+  Control characters from file names are replaced before printing, so a crafted file name cannot
+  inject terminal escape sequences; long masked values (PEM blocks) are shortened.
+- **JSON** (`reporters/json_reporter.py`):
+
+```json
+{
+  "schema_version": 1,
+  "tool": {"name": "tokenhound", "version": "0.0.1"},
+  "summary": {
+    "files_scanned": 3, "findings": 1, "below_threshold": 0, "threshold": 0.5,
+    "by_severity": {"critical": 1, "high": 0, "medium": 0, "low": 0}
+  },
+  "findings": [
+    {
+      "rule_id": "github-token", "severity": "critical",
+      "file_path": ".cursor/mcp.json", "line_no": 5, "commit_sha": null,
+      "masked_value": "ghp_********************************oL8g",
+      "fingerprint": "<sha256 hex>", "score": 1.0, "remediation": "Revoke the token ..."
+    }
+  ]
+}
 ```
 
 ## Data model (spec §5, p.5)
@@ -95,7 +151,9 @@ length-bounded to keep the regex linear.
 
 - **Secrets:** never logged or printed; masking happens before `Finding`; a cross-cutting test asserts
   no synthetic secret appears in any output.
-- **Errors:** custom exceptions (`RuleLoadError`, `SourceError`, ...) mapped to exit code 2.
+- **Errors:** custom exceptions derive from `TokenHoundError` (`RuleLoadError`, `SourceError`) and
+  map to exit code 2 with their message. Any other exception also exits 2, but its message is only
+  shown with `--verbose`, because it could quote scanned text.
 - **Logging:** standard `logging` to stderr, `--verbose` raises the level; never includes secret values.
 - **Configuration:** CLI flags only in the MVP. No credentials needed by the tool itself.
 - **Exit codes:** 0 no findings, 1 findings at or above threshold, 2 usage/runtime error.

@@ -19,7 +19,8 @@ advisory) and the secret is never used or stored.
 **What TokenHound protects against**
 
 - Committing credentials by accident (pre-commit hook on staged changes) *(planned)*
-- Credentials already present in the working tree or anywhere in git history *(planned)*
+- Credentials already present in the working tree
+- Credentials anywhere in git history *(planned)*
 
 **How TokenHound handles the secrets it finds**
 
@@ -28,6 +29,14 @@ advisory) and the secret is never used or stored.
 - Training data contains no real secrets: positives are synthetic; for real-world negatives only
   features, labels and a location pointer are stored, never the value.
 - TokenHound never sends candidate secrets to any provider or network service.
+
+**Hostile repository content**
+
+Scanned repositories are untrusted input. File names are stripped of control characters before
+terminal output (no escape-sequence injection), symbolic links are not followed (a scan never reads
+outside the scanned tree), large files are skipped, rule regexes are tested against pathological
+input, and messages of unexpected errors are hidden unless `--verbose` is given, since they could
+quote scanned text.
 
 **Known limitations**
 

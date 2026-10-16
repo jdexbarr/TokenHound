@@ -112,6 +112,8 @@ def test_shannon_entropy_known_values(value: str, expected: float) -> None:
         "$secretKey => '{v}'",
         "token = '{v}'",
         "PASSWORD={v}",
+        "connect(password={v})",
+        "{{secret: {v}}}",
     ],
 )
 def test_entropy_detector_flags_random_values_in_secret_assignments(
@@ -136,6 +138,9 @@ def test_entropy_detector_flags_random_values_in_secret_assignments(
         'token = "Ab3dE5"',  # too short
         'username = "q8ZrT2mXv9LpW4sK7nB1cY6d"',  # name is not secret-like
         "the key is important",  # no assignment
+        "keywords = self._keywords_by_rule_identifier[rule.id]",  # code, not a literal
+        "secret = match.group(rule.secret_group_name)",
+        "token=compute_token_for_the_user(x)",
     ],
 )
 def test_entropy_detector_ignores_non_secrets(text: str) -> None:

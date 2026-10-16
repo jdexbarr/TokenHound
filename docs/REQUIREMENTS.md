@@ -15,11 +15,11 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 
 | ID | Requirement | Src | Pri | Milestone | Acceptance criteria | Verification | Status |
 |---|---|---|---|---|---|---|---|
-| FR-001 | `tokenhound scan <dir>` scans the working tree | p.4–5 | M | H4 | Planted synthetic secrets in a temp dir are reported with correct file/line | Integration test | NOT STARTED |
+| FR-001 | `tokenhound scan <dir>` scans the working tree | p.4–5 | M | H4 | Planted synthetic secrets in a temp dir are reported with correct file/line | Integration test | VERIFIED (H4) |
 | FR-002 | `scan --history` scans the full git history | p.4 | M | H5 | Secret added then removed in a past commit is reported with its commit SHA | Integration test on temp git repo | NOT STARTED |
 | FR-003 | `scan --staged` scans only staged changes | p.4 | M | H5 | Only staged additions are reported; unstaged files ignored | Integration test | NOT STARTED |
-| FR-004 | Sources `WorkingTreeSource`, `GitHistorySource`, `StagedSource` yield `Chunk(path, commit, line_no, text)` | p.5, p.10 | M | H4–H5 | Each source satisfies the `Source` protocol | Unit tests + mypy | NOT STARTED |
-| FR-005 | CLI commands `scan`, `baseline`, `version` | p.10 | M | H1, H4, H6 | Each command exists with `--help` | CLI tests | IN PROGRESS (`version` done) |
+| FR-004 | Sources `WorkingTreeSource`, `GitHistorySource`, `StagedSource` yield `Chunk(path, commit, line_no, text)` | p.5, p.10 | M | H4–H5 | Each source satisfies the `Source` protocol | Unit tests + mypy | IN PROGRESS (`Source` protocol and `WorkingTreeSource` done; git sources in H5) |
+| FR-005 | CLI commands `scan`, `baseline`, `version` | p.10 | M | H1, H4, H6 | Each command exists with `--help` | CLI tests | IN PROGRESS (`version`, `scan` done; `baseline` in H6) |
 
 ### Detection
 
@@ -30,8 +30,8 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 | FR-008 | Initial rule set: AWS, GitHub, Anthropic, OpenAI, Hugging Face, Stripe, Slack, Google, PEM private key, JWT, generic entropy (+ Replicate, A-04) with spec severities | p.4, p.6–7 | M | H3 | Each rule matches its valid synthetic examples and rejects its invalid ones | Per-rule tests | VERIFIED |
 | FR-009 | Each pattern validated against official provider docs; source cited in its YAML | p.6, p.11 | M | H3 | Every YAML has a `references` entry to official docs | Schema test | VERIFIED |
 | FR-010 | JWT severity Medium, High when payload indicates privileged role | p.7 | M | H3 | `service_role` JWT reported as High | Unit test | VERIFIED |
-| FR-011 | Priority files: MCP/agent configs, `.env*`, `*.ipynb` incl. cell outputs, docker-compose, `*.tf`, `*.tfvars`, GitHub workflows | p.7 | M | H4 | Secret inside a notebook cell output is found and reported with the notebook path | Integration tests | NOT STARTED |
-| FR-012 | `.env.example` scanned with a different threshold | p.7 | M | H8 | Threshold for `.env.example` differs and is applied | Unit test | NOT STARTED |
+| FR-011 | Priority files: MCP/agent configs, `.env*`, `*.ipynb` incl. cell outputs, docker-compose, `*.tf`, `*.tfvars`, GitHub workflows | p.7 | M | H4 | Secret inside a notebook cell output is found and reported with the notebook path | Integration tests | VERIFIED (H4; `.env.example` threshold is FR-012) |
+| FR-012 | `.env.example` scanned with a different threshold | p.7 | M | H8 | Threshold for `.env.example` differs and is applied | Unit test | NOT STARTED (`.env.example` is classified in H4; its threshold comes with the model in H8) |
 | FR-013 | Detectors emit `Candidate(rule_id, match, span, chunk)` | p.5 | M | H2 | Type-checked dataclass | mypy + unit tests | VERIFIED |
 
 ### Context, classification, post-processing
@@ -40,8 +40,8 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 |---|---|---|---|---|---|---|---|
 | FR-014 | Context feature extraction (string shape, code, file, rule groups) | p.5, p.8 | M | H8 | Same function used by training and runtime; features deterministic | Unit tests | NOT STARTED |
 | FR-015 | Serialized scikit-learn model assigns `score ∈ [0,1]` | p.4–5, p.10 | M | H8 | Bundled model loads and scores every finding | Unit + integration tests | NOT STARTED |
-| FR-016 | Findings below a configurable threshold are dropped | p.4–5 | M | H8 | `--threshold` changes output | CLI test | NOT STARTED |
-| FR-017 | Dedup by `fingerprint = sha256(secret + file_path)` | p.5 | M | H2, H5 | Same secret/path across commits reported once | Unit + integration tests | IN PROGRESS (fingerprint done; dedup in H4–H5) |
+| FR-016 | Findings below a configurable threshold are dropped | p.4–5 | M | H8 | `--threshold` changes output | CLI test | IN PROGRESS (`--threshold` filter works; scores are pass-through 1.0 until H8) |
+| FR-017 | Dedup by `fingerprint = sha256(secret + file_path)` | p.5 | M | H2, H5 | Same secret/path across commits reported once | Unit + integration tests | IN PROGRESS (fingerprint done; dedup in H5) |
 | FR-018 | Baseline/allowlist `.tokenhound-baseline.json` | p.4, p.9 | M | H6 | Baselined finding suppressed; new one still reported | Integration test | NOT STARTED |
 | FR-019 | Severity derived from rule metadata | p.5 | M | H2 | Finding severity equals rule severity (except JWT elevation) | Unit test | VERIFIED |
 | FR-020 | Short provider-specific remediation in each finding | p.4–5, p.9 | M | H3, H9 | Every rule has non-empty remediation | Schema test | IN PROGRESS (per-rule remediation done; guide in H9) |
@@ -51,14 +51,14 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 
 | ID | Requirement | Src | Pri | Milestone | Acceptance criteria | Verification | Status |
 |---|---|---|---|---|---|---|---|
-| FR-022 | Rich terminal output | p.4, p.6 | M | H4 | Table with severity, rule, location, masked value, score | Snapshot test | NOT STARTED |
-| FR-023 | JSON output | p.4 | M | H4 | Valid JSON matching documented shape | Unit test | NOT STARTED |
+| FR-022 | Rich terminal output | p.4, p.6 | M | H4 | Table with severity, rule, location, masked value, score | Snapshot test | VERIFIED (H4) |
+| FR-023 | JSON output | p.4 | M | H4 | Valid JSON matching documented shape | Unit test | VERIFIED (H4) |
 | FR-024 | SARIF 2.1.0 output, visible in GitHub Security tab | p.3–4, p.13 | M | H9 | Validates against the official schema; shows in code scanning of example repo | Schema test + manual check | NOT STARTED |
-| FR-025 | Secrets always masked in every output | p.4–5, p.8 | M | H2–H9 | No synthetic secret appears in stdout, JSON, SARIF or baseline | Cross-cutting security test | IN PROGRESS (masking done; output checks in H4) |
+| FR-025 | Secrets always masked in every output | p.4–5, p.8 | M | H2–H9 | No synthetic secret appears in stdout, JSON, SARIF or baseline | Cross-cutting security test | VERIFIED (H4, cross-cutting test over terminal and JSON output) |
 | FR-026 | pre-commit hook (`.pre-commit-hooks.yaml`) | p.4, p.10 | M | H6 | Hook blocks commit with a synthetic secret in a sample repo | Integration test + manual | NOT STARTED |
 | FR-027 | GitHub Action (`action.yml`) with SARIF upload | p.3–4, p.10 | M | H9 | Action runs in example repo and uploads SARIF | Manual + workflow run | NOT STARTED |
 | FR-028 | Docker image | p.6, p.9–10 | M | H9 | `docker run ... tokenhound version` works | CI build | NOT STARTED |
-| FR-039 | Exit codes: 0 no findings, 1 findings, 2 error (A-08) | assumption | M | H4 | Codes match in each case | CLI tests | NOT STARTED |
+| FR-039 | Exit codes: 0 no findings, 1 findings, 2 error (A-08) | assumption | M | H4 | Codes match in each case | CLI tests | VERIFIED (H4) |
 
 ### ML pipeline (`ml/`)
 
@@ -79,19 +79,19 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 
 | ID | Requirement | Src | Pri | Milestone | Acceptance / target | Verification | Status |
 |---|---|---|---|---|---|---|---|
-| NFR-001 | Never print or store full secrets; fingerprint SHA-256 | p.4, p.8 | M | all | Cross-cutting test passes | Security test | IN PROGRESS (masking, fingerprint, no secret in reprs) |
+| NFR-001 | Never print or store full secrets; fingerprint SHA-256 | p.4, p.8 | M | all | Cross-cutting test passes | Security test | IN PROGRESS (masking, fingerprint, reprs, terminal/JSON/log output verified; SARIF and baseline later) |
 | NFR-002 | Datasets without real secrets | p.8 | M | H7 | Automated check over dataset files | Script | NOT STARTED |
 | NFR-003 | Recall ≥ 0.95 on labeled test set | p.10 | M (target) | H8 | Reported honestly | Notebook | NOT STARTED |
 | NFR-004 | ≥ 50% fewer false positives vs. rules-only at same recall | p.10 | M (target) | H8, H10 | Reported honestly | Notebook + benchmark | NOT STARTED |
 | NFR-005 | ≥ 10 secret types + generic detector | p.10 | M (target) | H3 | 11 types (A-04) | Rule count test | VERIFIED (11 providers, 13 rules + generic) |
 | NFR-006 | ~10k-commit repo scanned in < 2 min, measured and documented | p.10–11 | M (target) | H5, H10 | Benchmark script + README number | Benchmark | NOT STARTED |
-| NFR-007 | Coverage ≥ 80% in sources, detectors, reporters | p.11 | M (target) | H2–H9 | pytest-cov report | CI | NOT STARTED |
+| NFR-007 | Coverage ≥ 80% in sources, detectors, reporters | p.11 | M (target) | H2–H9 | pytest-cov report | CI | IN PROGRESS (sources, detectors, reporters at 99–100% line coverage in H4) |
 | NFR-008 | Installable with pip; Action and hook working in an example repo | p.11 | M | H9–H10 | Fresh install works; example repo green | Manual + CI | NOT STARTED |
 | NFR-009 | Report real numbers in README even if targets are missed | p.11 | M | H10 | README metrics table | Review | NOT STARTED |
 | NFR-010 | Five independent, separately testable, replaceable stages | p.5 | M | H2–H8 | Protocol per stage; tests per stage | Code review + tests | IN PROGRESS |
 | NFR-011 | Every change has pytest tests and passes ruff and mypy | p.6, p.12 | M | all | CI green on every PR | CI | VERIFIED |
 | NFR-012 | Rules versioned, tested per rule, official source cited | p.11 | M | H3 | Schema + per-rule tests | Tests | VERIFIED |
-| NFR-013 | No validity checks against provider APIs in MVP | p.5, p.8 | M | all | No network calls in scanner | Code review | NOT STARTED |
+| NFR-013 | No validity checks against provider APIs in MVP | p.5, p.8 | M | all | No network calls in scanner | Code review | IN PROGRESS (the scanner makes no network calls; reviewed each milestone) |
 | NFR-014 | Responsible disclosure of real secrets found during development | p.8 | M | H7 | Process in SECURITY.md | Review | IMPLEMENTED – PENDING VERIFICATION |
 | NFR-015 | Threat model documented in SECURITY.md | p.8, p.10 | M | H1, H10 | Final version reviewed | Review | IN PROGRESS (draft) |
 | NFR-016 | Total cost $0 | p.11 | M | all | No paid services | Review | NOT STARTED |
@@ -107,7 +107,7 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 | TECH-001 | Python 3.11+ | p.6 | VERIFIED (CI matrix 3.11–3.13) |
 | TECH-002 | uv + pyproject.toml | p.6 | VERIFIED |
 | TECH-003 | Typer | p.6 | VERIFIED |
-| TECH-004 | Rich | p.6 | NOT STARTED (H4) |
+| TECH-004 | Rich | p.6 | VERIFIED (H4) |
 | TECH-005 | GitPython; pygit2 only as later optimisation | p.6, p.11 | NOT STARTED (H5) |
 | TECH-006 | PyYAML + Pydantic | p.6 | VERIFIED |
 | TECH-007 | scikit-learn, pandas, joblib; LightGBM optional | p.6 | NOT STARTED (H7–H8) |
@@ -121,9 +121,9 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 
 | ID | Requirement | Src | Milestone | Status |
 |---|---|---|---|---|
-| UI-001 | Commands `scan`, `baseline`, `version` with auto-generated help | p.6, p.10 | H1–H6 | IN PROGRESS |
-| UI-002 | Flags `--history`, `--staged`, threshold, output format | p.4 | H4–H8 | NOT STARTED |
-| UI-003 | Rich table with severity colors | p.6 | H4 | NOT STARTED |
+| UI-001 | Commands `scan`, `baseline`, `version` with auto-generated help | p.6, p.10 | H1–H6 | IN PROGRESS (`scan`, `version`) |
+| UI-002 | Flags `--history`, `--staged`, threshold, output format | p.4 | H4–H8 | IN PROGRESS (`--threshold`, `--format`; `--history`/`--staged` in H5) |
+| UI-003 | Rich table with severity colors | p.6 | H4 | VERIFIED (H4) |
 | UI-004 | Masked values like `sk-a****xYz9` | p.5 | H2 | VERIFIED |
 | UI-005 | Findings in GitHub Security tab via SARIF | p.3 | H9 | NOT STARTED |
 

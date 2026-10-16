@@ -60,3 +60,6 @@ jobs:
           uv venv /tmp/wheel-env
           uv pip install --python /tmp/wheel-env/bin/python dist/*.whl
           /tmp/wheel-env/bin/tokenhound version
+
+      - name: Scan this repository's source with the installed wheel (dogfooding)
+        run: /tmp/wheel-env/bin/tokenhound scan src
