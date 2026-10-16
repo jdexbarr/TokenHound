@@ -20,6 +20,8 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
     "typer>=0.12",
 ]
 
@@ -37,6 +39,7 @@ dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",
     "ruff>=0.6",
+    "types-pyyaml>=6.0",
 ]
 
 [build-system]
@@ -63,7 +66,11 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]  # assert is the point of a test
+"tests/**" = [
+    "S101",  # assert is the point of a test
+    "S105", "S106",  # synthetic secrets and secret-like names are the point of these tests
+    "S311",  # seeded pseudo-random data generates synthetic secrets
+]
 
 [tool.mypy]
 python_version = "3.11"

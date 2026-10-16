@@ -39,3 +39,16 @@ spec: `pytest-cov` (to measure NFR-007); `jsonschema` will be added in H9 to val
 - **A-12** GitHub Action is a composite action installing the pinned PyPI version.
 - **A-13** `--history` scans only added lines from a single streamed `git log -p` (via GitPython) with a cache of seen blobs.
 - **A-14** Additions to the spec layout: `src/tokenhound/scanner.py` (orchestrator) and `src/tokenhound/baseline.py`.
+
+## D-006 · Detection core details (2026-10-16, H2)
+
+- `Candidate` carries `severity` and `remediation` in addition to the spec's four fields, so
+  detectors can set them (JWT privilege elevation) without the orchestrator looking rules up again.
+- Fingerprint is `sha256(secret + "\0" + file_path)`: the NUL separator prevents collisions
+  between different splits of the same characters; otherwise identical to spec §5.
+- Masking keeps the secret's length and reveals at most 4 characters per end (spec example), fewer
+  for short values, none below 10 characters.
+- Entropy detector defaults: min length 16, min entropy 3.5 bits/char, base severity medium. They
+  are deliberately permissive because the classifier filters later; tuned in H8.
+- Phase tags are created by Juan: the cloud environment's proxy rejects tag pushes.
+- PR workflow: Claude merges its own PRs (squash) once CI is green, at Juan's request.
