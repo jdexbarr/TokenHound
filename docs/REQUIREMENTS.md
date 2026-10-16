@@ -89,7 +89,7 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 | NFR-008 | Installable with pip; Action and hook working in an example repo | p.11 | M | H9–H10 | Fresh install works; example repo green | Manual + CI | NOT STARTED |
 | NFR-009 | Report real numbers in README even if targets are missed | p.11 | M | H10 | README metrics table | Review | NOT STARTED |
 | NFR-010 | Five independent, separately testable, replaceable stages | p.5 | M | H2–H8 | Protocol per stage; tests per stage | Code review + tests | NOT STARTED |
-| NFR-011 | Every change has pytest tests and passes ruff and mypy | p.6, p.12 | M | all | CI green on every PR | CI | IMPLEMENTED – PENDING VERIFICATION |
+| NFR-011 | Every change has pytest tests and passes ruff and mypy | p.6, p.12 | M | all | CI green on every PR | CI | VERIFIED |
 | NFR-012 | Rules versioned, tested per rule, official source cited | p.11 | M | H3 | Schema + per-rule tests | Tests | NOT STARTED |
 | NFR-013 | No validity checks against provider APIs in MVP | p.5, p.8 | M | all | No network calls in scanner | Code review | NOT STARTED |
 | NFR-014 | Responsible disclosure of real secrets found during development | p.8 | M | H7 | Process in SECURITY.md | Review | IMPLEMENTED – PENDING VERIFICATION |
@@ -104,14 +104,14 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 
 | ID | Constraint | Src | Status |
 |---|---|---|---|
-| TECH-001 | Python 3.11+ | p.6 | IMPLEMENTED – PENDING VERIFICATION (CI matrix 3.11–3.13) |
-| TECH-002 | uv + pyproject.toml | p.6 | IMPLEMENTED – PENDING VERIFICATION |
-| TECH-003 | Typer | p.6 | IMPLEMENTED – PENDING VERIFICATION |
+| TECH-001 | Python 3.11+ | p.6 | VERIFIED (CI matrix 3.11–3.13) |
+| TECH-002 | uv + pyproject.toml | p.6 | VERIFIED |
+| TECH-003 | Typer | p.6 | VERIFIED |
 | TECH-004 | Rich | p.6 | NOT STARTED (H4) |
 | TECH-005 | GitPython; pygit2 only as later optimisation | p.6, p.11 | NOT STARTED (H5) |
 | TECH-006 | PyYAML + Pydantic | p.6 | NOT STARTED (H2) |
 | TECH-007 | scikit-learn, pandas, joblib; LightGBM optional | p.6 | NOT STARTED (H7–H8) |
-| TECH-008 | pytest, ruff, mypy, pre-commit | p.6 | IMPLEMENTED – PENDING VERIFICATION |
+| TECH-008 | pytest, ruff, mypy, pre-commit | p.6 | VERIFIED |
 | TECH-009 | GitHub Actions, PyPI trusted publishing, Docker | p.6 | IN PROGRESS (CI done; publishing H10, Docker H9) |
 | TECH-010 | SARIF 2.1.0 | p.4, p.13 | NOT STARTED (H9) |
 | TECH-011 | Repository structure of spec §11 (+ `scanner.py`, `baseline.py`, A-14) | p.10 | IN PROGRESS |
@@ -131,8 +131,8 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 
 | ID | Deliverable | Src | Milestone | Status |
 |---|---|---|---|---|
-| DEL-001 | Public repo, spec §11 structure, MIT | p.9–10 | H1 | IMPLEMENTED – PENDING VERIFICATION |
-| DEL-002 | GitHub Actions CI | p.9 | H1 | IMPLEMENTED – PENDING VERIFICATION |
+| DEL-001 | Public repo, spec §11 structure, MIT | p.9–10 | H1 | VERIFIED |
+| DEL-002 | GitHub Actions CI | p.9 | H1 | VERIFIED |
 | DEL-003 | YAML rules + entropy + `scan .` with Rich/JSON, tests per rule | p.9 | H2–H4 | NOT STARTED |
 | DEL-004 | `--history`, `--staged`, dedup, baseline | p.9 | H5–H6 | NOT STARTED |
 | DEL-005 | pre-commit hook | p.9–10 | H6 | NOT STARTED |

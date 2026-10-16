@@ -30,5 +30,5 @@ Rules:
 | T-001 | FR-005, UI-001 | `uv sync` | `tokenhound version` via CliRunner | exit 0, prints `tokenhound <version>` | as expected (local) | VERIFIED (local) |
 | T-002 | UI-001 | — | run with no arguments | help listing `version` | as expected (local) | VERIFIED (local) |
 | T-003 | UI-001 | — | run unknown command | non-zero exit | as expected (local) | VERIFIED (local) |
-| T-004 | DEL-002, TECH-001 | GitHub Actions | CI matrix 3.11–3.13 | all jobs green | pending | IMPLEMENTED – PENDING VERIFICATION |
-| T-005 | NFR-008 (partial) | CI build job | build wheel, install in clean venv, run `tokenhound version` | prints version | passed locally; CI pending | IMPLEMENTED – PENDING VERIFICATION |
+| T-004 | DEL-002, TECH-001 | GitHub Actions | CI matrix 3.11–3.13 | all jobs green | green ([run](https://github.com/jdexbarr/TokenHound/actions/runs/38849756675)) | VERIFIED |
+| T-005 | NFR-008 (partial) | CI build job | build wheel, install in clean venv, run `tokenhound version` | prints version | passed locally and in CI ([run](https://github.com/jdexbarr/TokenHound/actions/runs/38849756675)) | VERIFIED |
