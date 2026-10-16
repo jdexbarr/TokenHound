@@ -52,3 +52,19 @@ spec: `pytest-cov` (to measure NFR-007); `jsonschema` will be added in H9 to val
   are deliberately permissive because the classifier filters later; tuned in H8.
 - Phase tags are created by Juan: the cloud environment's proxy rejects tag pushes.
 - PR workflow: Claude merges its own PRs (squash) once CI is green, at Juan's request.
+
+## D-007 · Initial rule set (2026-10-16, H3)
+
+- 13 rules for 11 providers. Splits beyond the spec table: Anthropic Admin keys (`sk-ant-admin01-`,
+  critical) separate from API keys (high); GitHub fine-grained PATs separate from classic tokens.
+- Slack also covers `xapp-`, `xwfp-` and rotating `xoxe.` tokens, listed in Slack's token docs.
+- Stripe only flags live keys (`sk_live_`, `rk_live_`) as in the spec; test keys are not secrets of
+  consequence and publishable keys are public by design.
+- Private keys: the whole PEM block is the secret when its END line is in the same chunk, so
+  different keys get different fingerprints; otherwise the header alone is reported.
+- OpenAI publishes no key format; the rule uses the issued prefixes and excludes `sk-ant-` (A-03).
+- JWT severity is raised by a per-rule severity adjuster (`SEVERITY_ADJUSTERS` in the regex
+  engine) that decodes the payload without verifying it; roles `service_role`, `admin`,
+  `administrator`, `superuser`, `root`, `owner` or `is_admin: true` count as privileged.
+- Rule examples live in `tests/test_rules.py` as generators, not in YAML, so no realistic key is
+  ever committed (resolves the open point in `docs/ARCHITECTURE.md`).

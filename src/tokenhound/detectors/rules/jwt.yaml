@@ -1,0 +1,14 @@
+provider: JWT
+rules:
+  - id: jwt
+    description: JSON Web Token (severity raised to high when the payload grants a privileged role)
+    regex: '\b(eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+)'
+    secret_group: 1
+    keywords: [eyj]
+    severity: medium
+    remediation: >-
+      Rotate the signing secret or key that issued the token (this invalidates it) and, for
+      service tokens such as a Supabase service_role key, regenerate the key in the provider
+      dashboard. Never ship privileged tokens to clients.
+    references:
+      - https://www.rfc-editor.org/rfc/rfc7519

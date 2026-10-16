@@ -39,3 +39,8 @@ Rules:
 | T-010 | FR-013, FR-019 | synthetic `tst_` rule | run `RegexDetector` | secret group, span, line, severity and remediation correct; keyword prefilter works | as expected | VERIFIED (local) |
 | T-011 | FR-007 | random 32-char values | run `EntropyDetector` on 8 assignment styles and 5 non-secrets | flags the random values only | as expected | VERIFIED (local) |
 | T-012 | FR-007 (robustness) | 90k-char identifier | run `EntropyDetector` | finishes in < 2 s (was ~23 s for 50k before the fix) | as expected | VERIFIED (local) |
+| T-013 | FR-008, NFR-005 | built-in rules | generated positives for all 13 rules in 4 contexts | each matches exactly its own rule, value captured exactly | as expected | VERIFIED (local) |
+| T-014 | FR-008 | built-in rules | near-miss negatives (short, wrong prefix, test-mode Stripe keys, Anthropic key vs OpenAI rule) | no match for that rule | as expected | VERIFIED (local) |
+| T-015 | FR-011 (partial) | GitHub token | MCP JSON, .env, Python, CI YAML contexts | token found in each | as expected | VERIFIED (local) |
+| T-016 | FR-010 | synthetic JWTs | service_role / admin roles / scopes / is_admin vs anon, malformed and deeply nested payloads | privileged → high; others keep medium; malformed never crash | as expected | VERIFIED (local) |
+| T-017 | FR-009, NFR-012 | built-in rules | inspect references and remediation | every rule cites an https source and has remediation | as expected | VERIFIED (local) |

@@ -1,0 +1,25 @@
+provider: Anthropic
+rules:
+  - id: anthropic-admin-key
+    description: Anthropic Admin API key (organization management)
+    regex: '\b(sk-ant-admin01-[A-Za-z0-9_\-]{20,})'
+    secret_group: 1
+    keywords: [sk-ant-admin]
+    severity: critical
+    remediation: >-
+      Delete the Admin API key in the Claude Console (Settings > Admin keys), create a new one if
+      needed, and audit organization changes made while it was exposed.
+    references:
+      - https://platform.claude.com/docs/en/manage-claude/admin-api-keys
+  - id: anthropic-api-key
+    description: Anthropic (Claude) API key
+    # Keys start with sk-ant- (e.g. sk-ant-api03-...); admin keys are matched by the rule above.
+    regex: '\b(sk-ant-(?!admin01-)[A-Za-z0-9_\-]{20,})'
+    secret_group: 1
+    keywords: [sk-ant-]
+    severity: high
+    remediation: >-
+      Disable or delete the key on the API keys page of the Claude Console, create a new key,
+      and store it in a secret manager or environment variable (ANTHROPIC_API_KEY).
+    references:
+      - https://platform.claude.com/docs/en/get-api-key

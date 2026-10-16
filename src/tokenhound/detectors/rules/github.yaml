@@ -1,0 +1,28 @@
+provider: GitHub
+rules:
+  - id: github-token
+    description: GitHub personal access, OAuth, user-to-server, server-to-server or refresh token
+    # gh + type letter + underscore + 36 base62 characters (the last 6 are a CRC32 checksum).
+    regex: '\b((?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36})\b'
+    secret_group: 1
+    keywords: [ghp_, gho_, ghu_, ghs_, ghr_]
+    severity: critical
+    remediation: >-
+      Revoke the token in GitHub (Settings > Developer settings, or the app/OAuth settings that
+      issued it), create a replacement with the minimum scopes, and check the security log for
+      unexpected use.
+    references:
+      - https://github.blog/engineering/behind-githubs-new-authentication-token-formats/
+      - https://github.blog/changelog/2021-03-31-authentication-token-format-updates-are-generally-available/
+  - id: github-fine-grained-pat
+    description: GitHub fine-grained personal access token
+    regex: '\b(github_pat_[A-Za-z0-9_]{82})\b'
+    secret_group: 1
+    keywords: [github_pat_]
+    severity: critical
+    remediation: >-
+      Delete the token in GitHub (Settings > Developer settings > Fine-grained tokens), create a
+      replacement limited to the repositories and permissions it needs, and review the security
+      log.
+    references:
+      - https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens

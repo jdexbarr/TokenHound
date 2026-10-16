@@ -1,0 +1,13 @@
+provider: Google
+rules:
+  - id: google-api-key
+    description: Google API key (Google Cloud, Maps, Firebase, Gemini)
+    regex: '\b(AIza[0-9A-Za-z_\-]{35})(?![0-9A-Za-z_\-])'
+    secret_group: 1
+    keywords: [aiza]
+    severity: medium
+    remediation: >-
+      Delete or regenerate the key in Google Cloud console (APIs & Services > Credentials) and
+      add API and application restrictions to its replacement.
+    references:
+      - https://docs.cloud.google.com/docs/authentication/api-keys-best-practices

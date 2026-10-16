@@ -1,0 +1,13 @@
+provider: Hugging Face
+rules:
+  - id: huggingface-token
+    description: Hugging Face user access token
+    regex: '\b(hf_[A-Za-z0-9]{30,})\b'
+    secret_group: 1
+    keywords: [hf_]
+    severity: high
+    remediation: >-
+      Delete or refresh the token in the Access Tokens tab of your Hugging Face settings. A
+      leaked token found elsewhere can be invalidated with the credentials revoke endpoint.
+    references:
+      - https://huggingface.co/docs/hub/security-tokens

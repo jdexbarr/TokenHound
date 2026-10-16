@@ -1,0 +1,15 @@
+provider: Stripe
+rules:
+  - id: stripe-live-key
+    description: Stripe live-mode secret (sk_live_) or restricted (rk_live_) API key
+    regex: '\b((?:sk|rk)_live_[A-Za-z0-9]{24,})\b'
+    secret_group: 1
+    keywords: [_live_]
+    severity: critical
+    remediation: >-
+      Rotate the key on the Stripe Dashboard API keys page (choose "Now" to revoke it at once),
+      deploy the replacement, and review the key's request logs for misuse. Prefer restricted
+      keys with the minimum permissions and an access policy.
+    references:
+      - https://docs.stripe.com/keys
+      - https://docs.stripe.com/keys/restricted-api-keys

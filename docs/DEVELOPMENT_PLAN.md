@@ -6,15 +6,15 @@ VERIFIED · ACCEPTED.
 
 ## Current state (2026-10-16)
 
-- **Current milestone:** H2 — detection core (phase F1)
-- **Done:** H0 plan; H1 skeleton merged (PR #1).
-- **In progress:** H2 pull request (`h2-core`).
+- **Current milestone:** H3 — provider rules (phase F1)
+- **Done:** H0 plan; H1 skeleton (PR #1); H2 detection core (PR #2).
+- **In progress:** H3 pull request (`h3-rules`).
 - **Blockers:** tag `f0` must be created by Juan (the cloud environment cannot push tags).
 - **Failing / pending tests:** none.
 - **Next three actions:**
-  1. Merge H2 once CI is green.
-  2. H3: research current key formats in official provider docs; write the 11 YAML rules.
-  3. H3: per-rule tests with synthetic keys generated at test time; JWT privilege elevation.
+  1. Merge H3 once CI is green.
+  2. H4: `WorkingTreeSource` (skip `.git/`, binaries, files > 1 MB; notebook outputs), orchestrator.
+  3. H4: Rich and JSON reporters, exit codes, overlap handling between provider rules and entropy.
 
 ## Milestones
 
@@ -22,8 +22,8 @@ VERIFIED · ACCEPTED.
 |---|---|---|---|---|---|
 | H0 | — | Spec analysis, requirements, architecture, plan | all | — | ACCEPTED |
 | H1 | F0 | Professional skeleton | TECH-001…003, TECH-008, NFR-011, NFR-020, DEL-001/002/016/019 | H0 | VERIFIED (merged, PR #1) |
-| H2 | F1 | Core models, masking, fingerprint, rule schema/loader, regex engine, entropy detector | FR-006/007/013/017/019/021/025, NFR-001 | H1 | VERIFIED (local; CI pending) |
-| H3 | F1 | 11 YAML rules validated against official docs, remediation, per-rule tests, JWT elevation | FR-008/009/010/020, NFR-005, NFR-012 | H2 | NOT STARTED |
+| H2 | F1 | Core models, masking, fingerprint, rule schema/loader, regex engine, entropy detector | FR-006/007/013/017/019/021/025, NFR-001 | H1 | VERIFIED (merged, PR #2) |
+| H3 | F1 | 11 YAML rules validated against official docs, remediation, per-rule tests, JWT elevation | FR-008/009/010/020, NFR-005, NFR-012 | H2 | VERIFIED (local; CI pending) |
 | H4 | F1 | Working-tree source, orchestrator, AI-priority files, Rich + JSON output, exit codes | FR-001/004/011/022/023/039 | H3 | NOT STARTED |
 | H5 | F2 | Git history (diffs, cache), staged source, dedup, first speed measurement | FR-002/003/017, NFR-006 | H4 | NOT STARTED |
 | H6 | F2 | Baseline/allowlist, `baseline` command, pre-commit hook | FR-005/018/026 | H5 | NOT STARTED |
@@ -73,6 +73,32 @@ exercised by `python -m tokenhound version` manually); `pre-commit run --all-fil
 
 **Evidence (local, 2026-10-16, Python 3.13.16):** `pytest` 186 passed; coverage 99% overall,
 `detectors/` 100%, `utils/` 100%, `models.py` 100%; ruff, ruff format, mypy strict (18 files) and
-all pre-commit hooks pass; wheel includes `detectors/rules/`. CI: pending.
+all pre-commit hooks pass; wheel includes `detectors/rules/`. CI: green on Python 3.11–3.13 and build
+([run 38852192242](https://github.com/jdexbarr/TokenHound/actions/runs/38852192242)).
 
-Detailed task breakdowns for H3+ are written when each milestone starts.
+## H3 — Provider rules (F1)
+
+1. **Goal:** the initial rule set of spec §7, each pattern checked against official documentation.
+2. **Requirements:** FR-008, FR-009, FR-010, FR-020 (per-rule remediation), NFR-005, NFR-012.
+3. **Dependencies:** H2 (rule schema, regex engine).
+4. **Tasks:** 11 YAML files (13 rules); `detectors/jwt.py` and severity adjusters in the regex engine;
+   per-rule tests.
+5. **Files:** `src/tokenhound/detectors/rules/*.yaml`, `src/tokenhound/detectors/jwt.py`,
+   `src/tokenhound/detectors/regex_engine.py`, `tests/test_rules.py`.
+6. **Tests:** every rule has generated positives (in 4 surrounding contexts) that match only that
+   rule, and near-miss negatives; MCP/.env/Python/YAML contexts; JWT elevation and malformed tokens;
+   reference and remediation presence; rule-count check for NFR-005.
+7. **Acceptance:** all rule tests pass; no realistic key literal committed.
+8. **Risks:** OpenAI does not document its key format (rule based on issued prefixes); the
+   generic `sk-` OpenAI pattern is broad and relies on the classifier for precision (H8).
+9. **Result:** 11 providers / 13 rules + generic entropy detector.
+
+**Sources checked (2026-10-16):** AWS IAM unique identifiers; GitHub token-format blog posts and
+PAT docs; Claude Console API key and Admin key docs; OpenAI API key safety article; Hugging Face
+security tokens; Stripe API keys and restricted keys; Slack token types; Google Cloud API key best
+practices; Replicate API tokens; RFC 7468 (PEM) and RFC 7519 (JWT). Each YAML file cites its URLs.
+
+**Evidence (local, 2026-10-16, Python 3.13.16):** `pytest` 353 passed (167 rule tests); coverage
+99%; ruff, ruff format and mypy strict (20 files) clean. CI: pending.
+
+Detailed task breakdowns for H4+ are written when each milestone starts.
