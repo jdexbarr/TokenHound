@@ -44,3 +44,12 @@ Rules:
 | T-015 | FR-011 (partial) | GitHub token | MCP JSON, .env, Python, CI YAML contexts | token found in each | as expected | VERIFIED (local) |
 | T-016 | FR-010 | synthetic JWTs | service_role / admin roles / scopes / is_admin vs anon, malformed and deeply nested payloads | privileged → high; others keep medium; malformed never crash | as expected | VERIFIED (local) |
 | T-017 | FR-009, NFR-012 | built-in rules | inspect references and remediation | every rule cites an https source and has remediation | as expected | VERIFIED (local) |
+| T-018 | FR-001, FR-004 | temp trees | walk with `.git/`, dot dirs, `.gitignore`, symlinks, binaries, size limits, unreadable files, single-file root, missing root | right files in priority-then-name order; skips logged; missing root raises `SourceError` | as expected | VERIFIED (local) |
+| T-019 | FR-011 | Jupyter-style notebooks | sources, stream/rich outputs, tracebacks, string fields, invalid and malformed notebooks | decoded text per field, images ignored, line numbers point into the `.ipynb` | as expected | VERIFIED (local) |
+| T-020 | FR-011 | paths | `classify()` on MCP, `.env*`, notebook, infra and ordinary paths | correct `FileKind` | as expected | VERIFIED (local) |
+| T-021 | FR-016, FR-019 | fake sources | overlap between provider rule and entropy; threshold; sorting | provider finding kept; inclusive threshold; severity-first order | as expected | VERIFIED (local) |
+| T-022 | FR-022, UI-003 | fixed findings | render terminal output | snapshot matches; remediation once per rule; colour only when enabled; control characters neutralised | as expected | VERIFIED (local) |
+| T-023 | FR-023 | fixed findings | render JSON | documented shape | as expected | VERIFIED (local) |
+| T-024 | FR-039, FR-001 | temp repo | `scan` clean / with findings / missing path / bad threshold / rule error / unexpected error | exit 0 / 1 / 2 / 2 / 2 / 2; unexpected error message hidden | as expected | VERIFIED (local) |
+| T-025 | NFR-001, FR-025 | one secret per rule in MCP config, `.env`, notebook output | `scan` in terminal and JSON, with and without `--verbose` | every secret reported; no full secret or secret middle in stdout or stderr | as expected | VERIFIED (local) |
+| T-026 | FR-007 | code-like assignments | entropy detector on `self._keys[...]`, `match.group(...)`, calls | no candidate; real values in calls and braces still found | as expected | VERIFIED (local) |

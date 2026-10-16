@@ -27,12 +27,13 @@ from typing import Annotated, Any
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, ValidationError, model_validator
 
+from tokenhound.errors import TokenHoundError
 from tokenhound.models import Severity
 
 RuleId = Annotated[str, Field(pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$", max_length=64)]
 
 
-class RuleLoadError(Exception):
+class RuleLoadError(TokenHoundError):
     """A rule file could not be read or does not satisfy the schema."""
 
 

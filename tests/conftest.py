@@ -4,8 +4,10 @@ All secrets used in tests are synthetic and generated at test time (see CLAUDE.m
 prefix belongs to no real provider, so these values cannot trip secret-scanning push protection.
 """
 
+import logging
 import random
 import string
+from collections.abc import Iterator
 
 import pytest
 
@@ -20,3 +22,13 @@ def random_token(rng: random.Random, length: int, alphabet: str = ALPHANUMERIC) 
 @pytest.fixture
 def rng() -> random.Random:
     return random.Random(1337)
+
+
+@pytest.fixture(autouse=True)
+def _reset_tokenhound_logger() -> Iterator[None]:
+    """The CLI installs its own stderr handler; undo it so ``caplog`` works in later tests."""
+    yield
+    logger = logging.getLogger("tokenhound")
+    logger.handlers.clear()
+    logger.setLevel(logging.NOTSET)
+    logger.propagate = True

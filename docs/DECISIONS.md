@@ -13,7 +13,7 @@ PyPI, npm, crates.io and Docker Hub. Package, command and import are `tokenhound
 ## D-002 · Code hosted on GitHub, work through pull requests (2026-10-16)
 
 Repo `jdexbarr/tokenhound` (public, so Actions and code scanning are free). Changes go through PRs with
-CI; Juan merges.
+CI; Claude squash-merges once CI is green (see D-006).
 
 ## D-003 · Repository docs in English (2026-10-16)
 
@@ -68,3 +68,22 @@ spec: `pytest-cov` (to measure NFR-007); `jsonschema` will be added in H9 to val
   `administrator`, `superuser`, `root`, `owner` or `is_admin: true` count as privileged.
 - Rule examples live in `tests/test_rules.py` as generators, not in YAML, so no realistic key is
   ever committed (resolves the open point in `docs/ARCHITECTURE.md`).
+
+## D-008 · Working-tree scan and output (2026-10-16, H4)
+
+- Priority files (spec §7) are scanned first and may be up to 20 MiB instead of 1 MiB: notebooks
+  with outputs easily exceed 1 MiB, and A-09's limit would otherwise skip exactly the files the spec
+  prioritises.
+- Notebooks are parsed so detectors see decoded cell text (not JSON-escaped strings) and cell
+  outputs are scanned; images are ignored. Invalid notebooks are scanned as plain text.
+- Symbolic links are skipped, so a scan never reads outside the scanned tree.
+- When a provider rule and the entropy detector match overlapping text, only the provider finding
+  is kept.
+- The entropy detector no longer accepts bare (unquoted) values that contain brackets or are
+  followed by code punctuation (`self._keys[rule.id]`, `match.group(...)`). On a self-scan this cut
+  candidates from 464 to 73 without losing any test case.
+- `--threshold` exists now (default 0.5, A-07 sets the final value in H8); with pass-through scores
+  it filters nothing yet.
+- JSON output carries `schema_version: 1` so its shape can evolve without breaking consumers.
+- Unexpected exceptions exit with code 2 and print only their type unless `--verbose`, because an
+  exception message could quote scanned text.

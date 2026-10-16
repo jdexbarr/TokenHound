@@ -9,3 +9,6 @@ explicit decision recorded in `docs/DECISIONS.md`.
 - Scanning Docker images and binary artifacts
 - Automatic remediation (history rewrite with git-filter-repo)
 - pygit2 backend for faster history scans (spec §6, only if GitPython misses the speed target)
+- `--exclude` globs and/or skipping dependency folders (`.venv/`, `node_modules/`) in working-tree
+  scans. A self-scan found most candidates in `.venv/` (H4). Needs a decision because A-09 says to
+  scan everything outside `.git/`.
