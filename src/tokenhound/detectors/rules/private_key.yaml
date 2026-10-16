@@ -1,0 +1,14 @@
+provider: Private key
+rules:
+  - id: private-key
+    description: PEM-encoded private key (RSA, EC, DSA, OpenSSH, PKCS#8, encrypted or PGP)
+    # The whole block is the secret when its END line is in the same chunk; otherwise the header.
+    regex: '(-----BEGIN (?P<kind>(?:RSA |EC |DSA |OPENSSH |ENCRYPTED |PGP )?)PRIVATE KEY(?: BLOCK)?-----(?:[\s\S]{1,16384}?-----END (?P=kind)PRIVATE KEY(?: BLOCK)?-----)?)'
+    secret_group: 1
+    keywords: [private key]
+    severity: critical
+    remediation: >-
+      Treat the key pair as compromised: generate a new key pair, replace the public key wherever
+      it is trusted (servers, certificates, deploy keys), and revoke any certificate for the old key.
+    references:
+      - https://www.rfc-editor.org/rfc/rfc7468

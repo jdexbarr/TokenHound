@@ -27,9 +27,9 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 |---|---|---|---|---|---|---|---|
 | FR-006 | Regex rules in YAML (one file per provider), extensible without code, validated with Pydantic on load | p.4, p.6, p.10 | M | H2 | Invalid rule file fails with a clear error; adding a YAML file adds a rule | Unit tests | VERIFIED |
 | FR-007 | Generic Shannon-entropy detector for key/secret/token/password assignments | p.3, p.7 | M | H2 | High-entropy assignment flagged; low-entropy and non-assignment ignored | Unit tests | VERIFIED |
-| FR-008 | Initial rule set: AWS, GitHub, Anthropic, OpenAI, Hugging Face, Stripe, Slack, Google, PEM private key, JWT, generic entropy (+ Replicate, A-04) with spec severities | p.4, p.6–7 | M | H3 | Each rule matches its valid synthetic examples and rejects its invalid ones | Per-rule tests | NOT STARTED |
-| FR-009 | Each pattern validated against official provider docs; source cited in its YAML | p.6, p.11 | M | H3 | Every YAML has a `references` entry to official docs | Schema test | NOT STARTED |
-| FR-010 | JWT severity Medium, High when payload indicates privileged role | p.7 | M | H3 | `service_role` JWT reported as High | Unit test | NOT STARTED |
+| FR-008 | Initial rule set: AWS, GitHub, Anthropic, OpenAI, Hugging Face, Stripe, Slack, Google, PEM private key, JWT, generic entropy (+ Replicate, A-04) with spec severities | p.4, p.6–7 | M | H3 | Each rule matches its valid synthetic examples and rejects its invalid ones | Per-rule tests | VERIFIED |
+| FR-009 | Each pattern validated against official provider docs; source cited in its YAML | p.6, p.11 | M | H3 | Every YAML has a `references` entry to official docs | Schema test | VERIFIED |
+| FR-010 | JWT severity Medium, High when payload indicates privileged role | p.7 | M | H3 | `service_role` JWT reported as High | Unit test | VERIFIED |
 | FR-011 | Priority files: MCP/agent configs, `.env*`, `*.ipynb` incl. cell outputs, docker-compose, `*.tf`, `*.tfvars`, GitHub workflows | p.7 | M | H4 | Secret inside a notebook cell output is found and reported with the notebook path | Integration tests | NOT STARTED |
 | FR-012 | `.env.example` scanned with a different threshold | p.7 | M | H8 | Threshold for `.env.example` differs and is applied | Unit test | NOT STARTED |
 | FR-013 | Detectors emit `Candidate(rule_id, match, span, chunk)` | p.5 | M | H2 | Type-checked dataclass | mypy + unit tests | VERIFIED |
@@ -44,7 +44,7 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 | FR-017 | Dedup by `fingerprint = sha256(secret + file_path)` | p.5 | M | H2, H5 | Same secret/path across commits reported once | Unit + integration tests | IN PROGRESS (fingerprint done; dedup in H4–H5) |
 | FR-018 | Baseline/allowlist `.tokenhound-baseline.json` | p.4, p.9 | M | H6 | Baselined finding suppressed; new one still reported | Integration test | NOT STARTED |
 | FR-019 | Severity derived from rule metadata | p.5 | M | H2 | Finding severity equals rule severity (except JWT elevation) | Unit test | VERIFIED |
-| FR-020 | Short provider-specific remediation in each finding | p.4–5, p.9 | M | H3, H9 | Every rule has non-empty remediation | Schema test | NOT STARTED |
+| FR-020 | Short provider-specific remediation in each finding | p.4–5, p.9 | M | H3, H9 | Every rule has non-empty remediation | Schema test | IN PROGRESS (per-rule remediation done; guide in H9) |
 | FR-021 | Frozen `Finding` dataclass with spec fields + `Chunk`, `Candidate`, `Severity` | p.5, p.10 | M | H2 | Fields match spec; no raw secret field on `Finding` | mypy + unit test | VERIFIED |
 
 ### Outputs and integrations
@@ -83,14 +83,14 @@ Implementation strategy and components per milestone are in `docs/ARCHITECTURE.m
 | NFR-002 | Datasets without real secrets | p.8 | M | H7 | Automated check over dataset files | Script | NOT STARTED |
 | NFR-003 | Recall ≥ 0.95 on labeled test set | p.10 | M (target) | H8 | Reported honestly | Notebook | NOT STARTED |
 | NFR-004 | ≥ 50% fewer false positives vs. rules-only at same recall | p.10 | M (target) | H8, H10 | Reported honestly | Notebook + benchmark | NOT STARTED |
-| NFR-005 | ≥ 10 secret types + generic detector | p.10 | M (target) | H3 | 11 types (A-04) | Rule count test | NOT STARTED |
+| NFR-005 | ≥ 10 secret types + generic detector | p.10 | M (target) | H3 | 11 types (A-04) | Rule count test | VERIFIED (11 providers, 13 rules + generic) |
 | NFR-006 | ~10k-commit repo scanned in < 2 min, measured and documented | p.10–11 | M (target) | H5, H10 | Benchmark script + README number | Benchmark | NOT STARTED |
 | NFR-007 | Coverage ≥ 80% in sources, detectors, reporters | p.11 | M (target) | H2–H9 | pytest-cov report | CI | NOT STARTED |
 | NFR-008 | Installable with pip; Action and hook working in an example repo | p.11 | M | H9–H10 | Fresh install works; example repo green | Manual + CI | NOT STARTED |
 | NFR-009 | Report real numbers in README even if targets are missed | p.11 | M | H10 | README metrics table | Review | NOT STARTED |
 | NFR-010 | Five independent, separately testable, replaceable stages | p.5 | M | H2–H8 | Protocol per stage; tests per stage | Code review + tests | IN PROGRESS |
 | NFR-011 | Every change has pytest tests and passes ruff and mypy | p.6, p.12 | M | all | CI green on every PR | CI | VERIFIED |
-| NFR-012 | Rules versioned, tested per rule, official source cited | p.11 | M | H3 | Schema + per-rule tests | Tests | NOT STARTED |
+| NFR-012 | Rules versioned, tested per rule, official source cited | p.11 | M | H3 | Schema + per-rule tests | Tests | VERIFIED |
 | NFR-013 | No validity checks against provider APIs in MVP | p.5, p.8 | M | all | No network calls in scanner | Code review | NOT STARTED |
 | NFR-014 | Responsible disclosure of real secrets found during development | p.8 | M | H7 | Process in SECURITY.md | Review | IMPLEMENTED – PENDING VERIFICATION |
 | NFR-015 | Threat model documented in SECURITY.md | p.8, p.10 | M | H1, H10 | Final version reviewed | Review | IN PROGRESS (draft) |

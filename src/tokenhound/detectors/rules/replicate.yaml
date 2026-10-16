@@ -1,0 +1,14 @@
+provider: Replicate
+rules:
+  - id: replicate-api-token
+    description: Replicate API token
+    # 40 characters, always starting with r8_.
+    regex: '\b(r8_[A-Za-z0-9]{37})\b'
+    secret_group: 1
+    keywords: [r8_]
+    severity: high
+    remediation: >-
+      Disable the token at replicate.com/account/api-tokens, create a new one and update the
+      applications that use it.
+    references:
+      - https://replicate.com/docs/topics/security/api-tokens

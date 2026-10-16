@@ -1,0 +1,16 @@
+provider: AWS
+rules:
+  - id: aws-access-key-id
+    description: AWS access key ID (long-lived AKIA or temporary STS ASIA)
+    # Unique IDs are 20 characters: a 4-character type prefix plus 16 uppercase letters/digits.
+    regex: '(?<![A-Z0-9])((?:AKIA|ASIA)[A-Z0-9]{16})(?![A-Z0-9])'
+    secret_group: 1
+    keywords: [akia, asia]
+    severity: critical
+    remediation: >-
+      Deactivate and delete the access key in IAM (Users > Security credentials), create a new
+      one if still needed, and review CloudTrail for activity from the leaked key. Prefer IAM
+      roles or short-lived credentials over long-lived keys.
+    references:
+      - https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-unique-ids
+      - https://docs.aws.amazon.com/STS/latest/APIReference/API_GetAccessKeyInfo.html

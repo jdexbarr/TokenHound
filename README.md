@@ -10,8 +10,30 @@ passwords, private keys). It focuses on the modern AI stack: dedicated detectors
 and priority scanning of MCP / agent configs, notebooks and `.env` files. A classifier trained on
 context (variable names, file paths, string shape) filters out placeholders and example values.
 
-> **Status: pre-alpha (Phase F0, project skeleton).** No scanning yet. See the
-> [development plan](docs/DEVELOPMENT_PLAN.md) for the roadmap.
+> **Status: pre-alpha (Phase F1, detection engine).** Detectors and rules exist; the `scan`
+> command arrives with milestone H4. See the [development plan](docs/DEVELOPMENT_PLAN.md).
+
+## Detected secret types
+
+| Provider / type | Rule id | Severity |
+|---|---|---|
+| AWS access key ID | `aws-access-key-id` | critical |
+| GitHub tokens (classic, OAuth, app, refresh) | `github-token` | critical |
+| GitHub fine-grained PAT | `github-fine-grained-pat` | critical |
+| Anthropic Admin API key | `anthropic-admin-key` | critical |
+| Anthropic API key | `anthropic-api-key` | high |
+| OpenAI API key | `openai-api-key` | high |
+| Hugging Face token | `huggingface-token` | high |
+| Stripe live secret / restricted key | `stripe-live-key` | critical |
+| Slack tokens | `slack-token` | high |
+| Google API key | `google-api-key` | medium |
+| PEM private key | `private-key` | critical |
+| JWT (high if it grants a privileged role, e.g. Supabase `service_role`) | `jwt` | medium / high |
+| Replicate API token | `replicate-api-token` | high |
+| Generic high-entropy secret assignment | `generic-high-entropy` | medium |
+
+Rules are YAML files in [`src/tokenhound/detectors/rules/`](src/tokenhound/detectors/rules/), each
+citing the provider's official documentation.
 
 ## Planned features (MVP)
 

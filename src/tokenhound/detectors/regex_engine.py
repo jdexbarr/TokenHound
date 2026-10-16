@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 
+from tokenhound.detectors.jwt import jwt_severity
 from tokenhound.detectors.rule_schema import Rule
-from tokenhound.models import Candidate, Chunk
+from tokenhound.models import Candidate, Chunk, Severity
+
+# Rules whose severity depends on the matched value, keyed by rule id.
+SEVERITY_ADJUSTERS: dict[str, Callable[[str, Severity], Severity]] = {"jwt": jwt_severity}
 
 
 class RegexDetector:
@@ -35,11 +39,13 @@ class RegexDetector:
                 secret = match.group(rule.secret_group)
                 if not secret:
                     continue
+                adjust = SEVERITY_ADJUSTERS.get(rule.id)
+                severity = adjust(secret, rule.severity) if adjust else rule.severity
                 yield Candidate(
                     rule_id=rule.id,
                     match=secret,
                     span=match.span(rule.secret_group),
                     chunk=chunk,
-                    severity=rule.severity,
+                    severity=severity,
                     remediation=rule.remediation,
                 )

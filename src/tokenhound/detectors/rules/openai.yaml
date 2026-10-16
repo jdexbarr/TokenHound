@@ -1,0 +1,15 @@
+provider: OpenAI
+rules:
+  - id: openai-api-key
+    description: OpenAI API key (legacy sk-, project sk-proj-, service account sk-svcacct-, admin sk-admin-)
+    # OpenAI does not document the format; prefixes are the ones issued by the platform.
+    # sk-ant- belongs to Anthropic and is excluded to avoid double findings (decision A-03).
+    regex: '\b(sk-(?!ant-)(?:(?:proj|svcacct|admin)-)?[A-Za-z0-9_\-]{20,})'
+    secret_group: 1
+    keywords: [sk-]
+    severity: high
+    remediation: >-
+      Rotate the key immediately on the OpenAI API keys page, update the applications that use
+      it, review usage for unexpected activity, and set spend limits.
+    references:
+      - https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety

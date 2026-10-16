@@ -1,0 +1,13 @@
+provider: Slack
+rules:
+  - id: slack-token
+    description: Slack bot, user, workflow, app-level or rotating token
+    regex: '\b((?:xox[abposr]|xapp|xwfp|xoxe\.xox[bp]|xoxe\.xapp)-[A-Za-z0-9\-]{10,})'
+    secret_group: 1
+    keywords: [xox, xapp-, xwfp-]
+    severity: high
+    remediation: >-
+      Revoke the token (auth.revoke or reinstall/rotate it from the app's settings at
+      api.slack.com/apps), issue a new one and check workspace access logs.
+    references:
+      - https://docs.slack.dev/authentication/tokens
