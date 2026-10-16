@@ -51,19 +51,37 @@ class Reporter(Protocol):
 
 ## Data model (spec §5, p.5)
 
-- `Chunk(path, commit, line_no, text)`
-- `Candidate(rule_id, match, span, chunk)` — the **only** object that holds a raw secret, in memory.
+Implemented in `src/tokenhound/models.py`.
+
+- `Chunk(path, commit, line_no, text)`: a block of text; `line_no` is the line of its first line.
+- `Candidate(rule_id, match, span, chunk, severity, remediation)`: the **only** object that holds a
+  raw secret, in memory. `severity` and `remediation` are additions to the spec's four fields: the
+  detector copies them from its rule (and can raise severity, e.g. privileged JWTs). `match` and the
+  chunk text are excluded from `repr`.
 - `Finding` (frozen): `rule_id, file_path, line_no, commit_sha, masked_value, fingerprint, score,
   severity, remediation`. It has no raw-value field: the fingerprint is computed and the value masked
   before a `Finding` is built, so no reporter can leak a secret by mistake.
-- `Severity`: enum (critical, high, medium, low).
+- `Severity`: enum (critical, high, medium, low) with a `rank` for sorting.
+- Masking (`utils/masking.py`): same length as the secret; 4 characters visible at each end for
+  values of 20+ characters, 2 for 10–19, none below 10.
+- Fingerprint (`utils/fingerprint.py`): `sha256(secret + "\0" + file_path)`.
 
 ## Rules
 
-One YAML file per provider in `src/tokenhound/detectors/rules/`, validated by a Pydantic model:
-`id`, `provider`, `description`, `regex`, `keywords` (cheap prefilter), `severity`, optional
-`min_entropy`, `remediation`, `references` (official source, required), `examples.valid` /
-`examples.invalid` (synthetic strings used by per-rule tests).
+One YAML file per provider in `src/tokenhound/detectors/rules/`, shaped as
+`{provider, rules: [...]}` and validated by the Pydantic `Rule` model in
+`detectors/rule_schema.py`: `id` (kebab-case, unique), `description`, `regex` (must compile),
+`secret_group` (index or name of the group holding the secret; 0 = whole match), `keywords`
+(case-insensitive prefilter: the regex only runs if one keyword is present), `severity`,
+`remediation`, `references` (at least one URL to official docs). Unknown fields are rejected.
+
+Per-rule test examples are generated in test code at test time rather than stored in the YAML,
+so the repository never contains realistic fake keys (decided in H3).
+
+The generic entropy detector (`detectors/entropy.py`) is code, not YAML: it matches assignments
+to names containing key/secret/token/password/pwd/credential/auth and flags values of at least 16
+characters with Shannon entropy ≥ 3.5 bits/char (defaults, tuned in H8). Name parts are
+length-bounded to keep the regex linear.
 
 ## Classifier
 

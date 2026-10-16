@@ -6,23 +6,23 @@ VERIFIED · ACCEPTED.
 
 ## Current state (2026-10-16)
 
-- **Current milestone:** H1 — project skeleton (phase F0)
-- **Done:** H0 analysis and plan approved by Juan; name chosen (TokenHound); repo created.
-- **In progress:** H1 pull request #1 (`f0-setup`): CI green, waiting for Juan's review and merge.
-- **Blockers:** none.
+- **Current milestone:** H2 — detection core (phase F1)
+- **Done:** H0 plan; H1 skeleton merged (PR #1).
+- **In progress:** H2 pull request (`h2-core`).
+- **Blockers:** tag `f0` must be created by Juan (the cloud environment cannot push tags).
 - **Failing / pending tests:** none.
 - **Next three actions:**
-  1. Get H1 CI green, Juan merges, tag `f0`.
-  2. H2: `models.py`, masking, fingerprint, rule schema and loader.
-  3. H2: regex engine and entropy detector with unit tests.
+  1. Merge H2 once CI is green.
+  2. H3: research current key formats in official provider docs; write the 11 YAML rules.
+  3. H3: per-rule tests with synthetic keys generated at test time; JWT privilege elevation.
 
 ## Milestones
 
 | ID | Phase | Goal | Requirements | Depends on | Status |
 |---|---|---|---|---|---|
 | H0 | — | Spec analysis, requirements, architecture, plan | all | — | ACCEPTED |
-| H1 | F0 | Professional skeleton | TECH-001…003, TECH-008, NFR-011, NFR-020, DEL-001/002/016/019 | H0 | VERIFIED |
-| H2 | F1 | Core models, masking, fingerprint, rule schema/loader, regex engine, entropy detector | FR-006/007/013/017/019/021/025, NFR-001 | H1 | NOT STARTED |
+| H1 | F0 | Professional skeleton | TECH-001…003, TECH-008, NFR-011, NFR-020, DEL-001/002/016/019 | H0 | VERIFIED (merged, PR #1) |
+| H2 | F1 | Core models, masking, fingerprint, rule schema/loader, regex engine, entropy detector | FR-006/007/013/017/019/021/025, NFR-001 | H1 | VERIFIED (local; CI pending) |
 | H3 | F1 | 11 YAML rules validated against official docs, remediation, per-rule tests, JWT elevation | FR-008/009/010/020, NFR-005, NFR-012 | H2 | NOT STARTED |
 | H4 | F1 | Working-tree source, orchestrator, AI-priority files, Rich + JSON output, exit codes | FR-001/004/011/022/023/039 | H3 | NOT STARTED |
 | H5 | F2 | Git history (diffs, cache), staged source, dedup, first speed measurement | FR-002/003/017, NFR-006 | H4 | NOT STARTED |
@@ -53,4 +53,26 @@ VERIFIED · ACCEPTED.
 exercised by `python -m tokenhound version` manually); `pre-commit run --all-files` all hooks passed;
 `uv build` produced sdist + wheel and `tokenhound version` ran from a clean venv. CI on GitHub: all four jobs green (Python 3.11, 3.12, 3.13, build) on [run 38849756675](https://github.com/jdexbarr/TokenHound/actions/runs/38849756675).
 
-Detailed task breakdowns for H2+ are written when each milestone starts.
+## H2 — Detection core (F1)
+
+1. **Goal:** the data model and the two detectors every later stage builds on.
+2. **Requirements:** FR-006, FR-007, FR-013, FR-017 (fingerprint), FR-019, FR-021, FR-025 (masking), NFR-001, TECH-006, UI-004.
+3. **Dependencies:** H1.
+4. **Tasks:** `models.py` (Chunk, Candidate, Finding, Severity); `utils/masking.py`; `utils/fingerprint.py`;
+   `detectors/rule_schema.py` (Pydantic schema + YAML loader); `detectors/regex_engine.py`;
+   `detectors/entropy.py`; add PyYAML, Pydantic, types-PyYAML.
+5. **Files:** the modules above, `detectors/rules/README.md`, `tests/conftest.py`, `tests/test_utils.py`,
+   `tests/test_models.py`, `tests/test_rule_schema.py`, `tests/test_detectors.py`.
+6. **Tests:** masking examples and property test over lengths 1–119; fingerprint determinism and
+   separation; model invariants (no raw secret in fields or reprs, immutability, score range);
+   rule validation errors; detector behaviour; entropy thresholds; ReDoS regression.
+7. **Acceptance:** all tests pass; ruff and mypy strict clean; coverage of `detectors/` ≥ 80%.
+8. **Risks found:** the first entropy regex missed bare names (`token = ...`) and backtracked
+   quadratically on huge identifiers (50k chars: ~23 s). Both fixed and covered by tests.
+9. **Result:** H3 can add provider rules as YAML only.
+
+**Evidence (local, 2026-10-16, Python 3.13.16):** `pytest` 186 passed; coverage 99% overall,
+`detectors/` 100%, `utils/` 100%, `models.py` 100%; ruff, ruff format, mypy strict (18 files) and
+all pre-commit hooks pass; wheel includes `detectors/rules/`. CI: pending.
+
+Detailed task breakdowns for H3+ are written when each milestone starts.
